@@ -373,7 +373,7 @@ R.renders=function(){
 };
 R.cad=function(){
   var h=head("cad","CAD","Tallen drawing set v5 for SO# 551963, drawn 8/27/26 by Matt Waldner. Each sheet opens full screen.",fileBtn("cad","Download full CAD PDF"));
-  h+=shots(CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}}),"cad");
+  h+=shots(cadList(),"cad");
   h+='<h3>Files</h3><div class="files">'+docRow("cad")+'</div>';
   return h;
 };
@@ -501,7 +501,8 @@ var BLANK={crew:{role:"",dept:"Video",name:"",co:"",phone:"",email:"",inote:"",a
 
 /* lightbox */
 var LB=null;
-function groupList(g){return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}})}
+function cadList(){return CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}}).concat([{src:"files/boh-layout.jpg",t:"Tech layout · back of house"}])}
+function groupList(g){return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
 function openLB(g,i){
   var list=groupList(g);LB={g:g,i:i,list:list,actual:false};
   var el=document.createElement("div");el.className="lb";el.id="lb";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
