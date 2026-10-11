@@ -203,8 +203,9 @@ var FILES={
  cad:{name:"Tallen CAD v5 — full set (6 sheets)",path:"files/NP-Chicago-CAD-v5.pdf",size:"9.7 MB"},
  ledMap:{name:"LED pixel map + Novastar layout",path:"files/LED-Pixel-Map.pdf",size:"1.7 MB"},
  brand:{name:"Nixon Peabody brand guidelines (Feb 2025)",path:"files/NP-Brand-Guidelines-2025.pdf",size:"2.6 MB"},
+ lxpdf:{name:"Lighting power & circuit plan (PDF)",path:"files/NP-Chicago-Lighting-Power-Plan.pdf",size:"0.2 MB"},
  fonts:{name:"Brand fonts — Tiempos Headline (12) + Soleil (17), OTF",zip:"NP-Brand-Fonts-Tiempos-Soleil.zip",bundle:FONTS,size:"≈ 4 MB zip"},
- allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg"],size:"≈ 13 MB zip"},
+ allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf"],size:"≈ 13 MB zip"},
  allBrand:{name:"Brand package — guidelines + fonts",zip:"NP-Chicago-Brand-Package.zip",bundle:["files/NP-Brand-Guidelines-2025.pdf"].concat(FONTS),size:"≈ 7 MB zip"}
 };
 var RENDERS=[
@@ -404,8 +405,15 @@ R.audio=function(){
   return h;
 };
 R.lighting=function(){
-  var h=head("lighting","Lighting","Profiles, stage wash and room wash on a Hedgehog 4, with data and power.");
-  h+='<div class="grid g3"><div class="card"><h4>Profiles</h4><div class="mono" style="font-size:22px;font-weight:600">10 × Diablo S</div><p class="muted small" style="margin:4px 0 0">Ayrton · LED profile w/ shutters</p></div><div class="card"><h4>Stage wash</h4><div class="mono" style="font-size:22px;font-weight:600">10 × Impression X4</div><p class="muted small" style="margin:4px 0 0">GLP · 2 spares on hand</p></div><div class="card"><h4>Room wash</h4><div class="mono" style="font-size:22px;font-weight:600">8 × Impression X4</div><p class="muted small" style="margin:4px 0 0">GLP · downstage truss</p></div></div>';
+  var h=head("lighting","Lighting","Profiles and room wash on the downstage truss, X4s on the LED wall, COLORado uplights on the floor.");
+  h+='<div class="grid g3"><div class="card"><h4>Profiles</h4><div class="mono" style="font-size:22px;font-weight:600">10 × Diablo S</div><p class="muted small" style="margin:4px 0 0">Ayrton · LED profile w/ shutters</p></div><div class="card"><h4>LED wall wash</h4><div class="mono" style="font-size:22px;font-weight:600">10 × Impression X4</div><p class="muted small" style="margin:4px 0 0">GLP · 2 spares on hand</p></div><div class="card"><h4>Room wash</h4><div class="mono" style="font-size:22px;font-weight:600">8 × Impression X4</div><p class="muted small" style="margin:4px 0 0">GLP · downstage truss</p></div></div>';
+  if(S.lx){var X=S.lx;
+  h+='<h3>Power &amp; circuiting</h3><div class="grid g3" style="margin-bottom:12px"><div class="card"><h4>Total load (max)</h4><div class="mono" style="font-size:22px;font-weight:600">'+(X.total_w/1000).toFixed(1)+' kW</div><p class="muted small" style="margin:4px 0 0">'+X.total_a+' A at 120 V</p></div><div class="card"><h4>Per leg (208Y/120)</h4><div class="mono" style="font-size:22px;font-weight:600">A '+X.phase_a.A+' · B '+X.phase_a.B+' · C '+X.phase_a.C+'</div><p class="muted small" style="margin:4px 0 0">amps, all fixtures at full</p></div><div class="card"><h4>Socapex pull</h4><div class="mono" style="font-size:22px;font-weight:600">'+X.feet_total+'\' total</div><p class="muted small" style="margin:4px 0 0">'+Object.keys(X.pull).sort(function(a,b){return b-a}).map(function(k){return X.pull[k]+' × '+k+'\''}).join(' · ')+' · '+X.socas.length+' runs · includes spares</p></div></div>';
+  h+='<button class="hero-shot" data-lb="lx" data-i="0" style="background:#fff"><img src="files/lx-truss-plot.svg" alt="Downstage truss plot with unit numbers, DMX addresses and circuits"></button><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px">'+fileBtn("lxpdf","Download circuit plan PDF")+'<a class="btn" href="files/NP-Chicago-Lighting-Power-Plan.pdf" target="_blank" rel="noopener">'+ICON.open+'Open PDF</a></div><button class="hero-shot" data-lb="lx" data-i="1" style="background:#fff;margin-bottom:14px"><img src="files/lx-floor-wall.svg" alt="LED wall X4 circuits with tri-taps, and floor COLORado circuits"></button>';
+  h+='<div class="tw"><table><thead><tr><th>Circuit</th><th>Fixtures</th><th style="text-align:right">Load</th><th>Phase</th><th style="text-align:right">Amps</th></tr></thead><tbody>'+X.socas.map(function(s){return '<tr class="grouprow"><td colspan="5">Soca '+esc(s.s)+' · '+esc(s.feeds)+' · '+s.stack.map(function(x){return x+'\''}).join(' + ')+' run</td></tr>'+s.circuits.map(function(c){return '<tr><td class="mono"><b>'+esc(c.c)+'</b></td><td>'+esc(c.fx)+'</td><td class="q" style="width:auto">'+c.w+' W</td><td>'+c.ph+'</td><td class="q" style="width:auto">'+c.a+' A</td></tr>'}).join('')}).join('')+'</tbody></table></div>';
+  h+='<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">Patch · '+X.patch.length+' units</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th>Unit</th><th>Fixture</th><th>Position</th><th>DMX</th><th>Mode</th><th>Circuit</th></tr></thead><tbody>'+X.patch.map(function(p){return '<tr><td class="mono"><b>'+p.id+'</b></td><td>'+esc(p.t)+'</td><td class="sub">'+esc(p.pos)+'</td><td class="mono">'+esc(p.addr)+'</td><td class="sub">'+esc(p.mode)+'</td><td class="mono">'+esc(p.c)+'</td></tr>'}).join('')+'</tbody></table></div></details>';
+  h+='<p class="small" style="margin-top:10px"><b>Also pull:</b> '+X.extras.breakouts+' Soca breakouts · '+X.extras.tri_taps+' tri-taps · '+X.extras.stingers25+' × 25\' Edison stingers · '+X.extras.ext_100+' × 100\' + '+X.extras.ext_50+' × 50\' 12/3 extensions (Soca D cross-stage). Counts include spares.</p>';
+  h+='<p class="muted small" style="margin-top:8px">Planned at 120 V, 20 A breakers loaded to 16 A max, using manufacturer maximum wattage. Truss positions and run lengths are scaled from the CAD with 20% overage; confirm at hang.</p>';}
   h+='<h3>Gear</h3>'+gearTable("lighting")+openBlock(DEPT_FOR.lighting)+'<h3>Crew</h3>'+crewFor(["Lighting"]);
   return h;
 };
@@ -470,7 +478,7 @@ R.brand=function(){
   var cols=[["Azure","#28519D"],["Verde","#188369"],["Cerise","#D33867"],["Plum","#5F2C8F"],["Light Azure","#D5F1FE"],["Light Verde","#D1F4EC"],["Light Cerise","#FAD8E3"],["Light Plum","#E7D8F7"],["Black","#1A1B2E"],["Gray","#596267"],["Dove","#E2E4E4"],["Frost","#F6F6F6"]];
   h+='<h3>Digital palette · tap to copy</h3><div class="sw">'+cols.map(function(c){return '<button class="c" data-hex="'+c[1]+'"><i style="background:'+c[1]+'"></i><span><b>'+c[0]+'</b><br><span class="mono">'+c[1]+'</span></span></button>'}).join("")+'</div>';
   h+='<div class="note" style="margin-top:12px">Logo: light Spark with the logotype in the darker color. Don\'t recolor, rotate, add effects or place on busy backgrounds. Brand photography uses NP people only — no stock faces.</div>';
-  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
+  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
   h+='<p class="muted small" style="margin-top:10px">Fonts are Nixon Peabody\'s licensed copies, shared for this show\'s content only.</p>';
   return h;
 };
@@ -504,7 +512,7 @@ var BLANK={crew:{role:"",dept:"Video",name:"",co:"",phone:"",email:"",inote:"",a
 /* lightbox */
 var LB=null;
 function cadList(){return CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}}).concat([{src:"files/boh-layout.jpg",t:"Tech layout · back of house"}])}
-function groupList(g){return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
+function groupList(g){if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
 function openLB(g,i){
   var list=groupList(g);LB={g:g,i:i,list:list,actual:false};
   var el=document.createElement("div");el.className="lb";el.id="lb";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
