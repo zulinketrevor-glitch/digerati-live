@@ -204,9 +204,11 @@ var FILES={
  ledMap:{name:"LED pixel map + Novastar layout",path:"files/LED-Pixel-Map.pdf",size:"1.7 MB"},
  brand:{name:"Nixon Peabody brand guidelines (Feb 2025)",path:"files/NP-Brand-Guidelines-2025.pdf",size:"2.6 MB"},
  campdf:{name:"Camera & record wiring (PDF)",path:"files/NP-Chicago-Camera-Record-Wiring.pdf",size:"0.2 MB"},
+ vvpdf:{name:"Video village signal flow (E2) PDF",path:"files/Video-Village-Signal-Flow.pdf",size:"9.4 MB"},
+ aupdf:{name:"Audio coverage report (EASE Focus) PDF",path:"files/Audio-Coverage-EASE.pdf",size:"0.3 MB"},
  lxpdf:{name:"Lighting power & circuit plan (PDF)",path:"files/NP-Chicago-Lighting-Power-Plan.pdf",size:"0.2 MB"},
  fonts:{name:"Brand fonts — Tiempos Headline (12) + Soleil (17), OTF",zip:"NP-Brand-Fonts-Tiempos-Soleil.zip",bundle:FONTS,size:"≈ 4 MB zip"},
- allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf","files/NP-Chicago-Camera-Record-Wiring.pdf"],size:"≈ 13 MB zip"},
+ allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf","files/NP-Chicago-Camera-Record-Wiring.pdf","files/Video-Village-Signal-Flow.pdf","files/Audio-Coverage-EASE.pdf","files/truck-route.jpg"],size:"≈ 23 MB zip"},
  allBrand:{name:"Brand package — guidelines + fonts",zip:"NP-Chicago-Brand-Package.zip",bundle:["files/NP-Brand-Guidelines-2025.pdf"].concat(FONTS),size:"≈ 7 MB zip"}
 };
 var RENDERS=[
@@ -231,6 +233,8 @@ var SECTIONS=[
  {id:"staging",t:"Staging & Rigging",grp:"Departments"},
  {id:"sourcing",t:"Sourcing",grp:"Logistics"},
  {id:"crew",t:"Crew & Travel",grp:"Logistics"},
+ {id:"callsheet",t:"Crew Call",grp:"Logistics"},
+ {id:"trucking",t:"Trucking",grp:"Logistics"},
  {id:"checks",t:"Cross-check",grp:"Logistics"},
  {id:"brand",t:"Brand & Files",grp:"Logistics"}
 ];
@@ -329,7 +333,7 @@ R.send=function(){
   var stale=S.savedAt&&(!S.crewSyncedAt||new Date(S.savedAt)>new Date(S.crewSyncedAt));
   h+='<div class="note" style="'+(stale?'border-color:var(--warn);background:var(--warn-soft)':'')+'">Dashboard last saved: <b>'+fmt(S.savedAt)+'</b> · Crew view last updated: <b>'+fmt(S.crewSyncedAt)+'</b>'+(stale?'<br>You have changes the crew can\'t see yet. Ask Claude to "sync the crew view".':'')+'</div>';
   if(!S.crewUrl){h+='<p class="muted">The crew view link isn\'t set yet.</p>';return h}
-  var who={overview:"Everyone",renders:"Client, everyone",cad:"Everyone, Tallen",led:"LED engineer, content",video:"Video, E2 op, prompter, camera",audio:"Audio",lighting:"Lighting, Nic",staging:"Everyone",sourcing:"Brian / gear pickups",crew:"Traveling crew",brand:"GFX, playback, content"};
+  var who={overview:"Everyone",renders:"Client, everyone",cad:"Everyone, Tallen",led:"LED engineer, content",video:"Video, E2 op, prompter, camera",audio:"Audio",lighting:"Lighting, Nic",staging:"Everyone",sourcing:"Brian / gear pickups",crew:"Traveling crew",callsheet:"All crew + local labor steward",trucking:"Truck driver",brand:"GFX, playback, content"};
   h+='<div class="tw" style="margin-top:14px"><table><thead><tr><th>Page</th><th>Send to</th><th></th></tr></thead><tbody>'+
   SECTIONS.filter(function(s){return s.id!=="send"&&s.id!=="checks"&&s.id!=="sourcing"}).map(function(s){return '<tr><td style="font-weight:600">'+esc(s.t)+'</td><td class="sub">'+esc(who[s.id]||"")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn" data-copy="'+s.id+'">'+ICON.link+'Copy link</button> <a class="btn" href="'+esc(S.crewUrl.split("#")[0]+"#"+s.id)+'" target="_blank" rel="noopener">'+ICON.open+'Preview</a></td></tr>'}).join("")+
   '</tbody></table></div>';
@@ -396,6 +400,8 @@ R.video=function(){
   var h=head("video","Video & Camera","Switching, playback, prompter, cameras, displays and show control.");
   h+='<div class="grid g3"><div class="card"><h4>Back of house</h4><p class="small muted" style="margin:0">Upstage row: Playback · GFX · racks (Wide GFX, E2 1, E2 2, LED Proc) · E2 · Prompter<br>Downstage row: REC · Cam Switch · AI Tech<br>A2 angled at the drape line</p></div><div class="card"><h4>FOH riser</h4><p class="small muted" style="margin:0">18\' × 8\' × 16"h at the back of house: Audio · Lighting · TD</p></div><div class="card"><h4>Cameras</h4><p class="small muted" style="margin:0">2 × UC4000 on 8\' × 6\' × 24" risers ≈ 90\' from stage; PTZ ≈ 105\'</p></div></div>';
   h+='<h3>Back of house layout</h3><button class="hero-shot" data-lb="boh" data-i="0" style="background:#fff"><img src="files/boh-layout.jpg" alt="Back of house layout: tech tables, racks and A2 position"></button><p class="muted small" style="margin:6px 0 0">Tap to view full screen.</p>';
+  h+='<h3>Video village signal flow · E2</h3><button class="hero-shot" data-lb="vv" data-i="0" style="background:#fff"><img src="files/video-village-flow.jpg" alt="Video village signal flow: GFX, Milli, AI, prompter sources into the E2, outputs to DSMs, BSMs, Zoom and the four LED processors"></button><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px">'+fileBtn("vvpdf","Download signal flow PDF")+'<a class="btn" href="files/Video-Village-Signal-Flow.pdf" target="_blank" rel="noopener">'+ICON.open+'Open PDF</a></div>';
+  h+='<div class="grid g2" style="margin-bottom:6px"><div class="card"><h4>LED processors</h4><p class="small" style="margin:0">Center screen left and right: 2688 × 1344, 14 × 7 panels. Outputs 1–7 mains, 9–15 backups.<br>House left and right IMAG: 1152 × 1536, 6 × 8 panels. Outputs 1–3 mains, 9–11 backups, 2 × 330\' 12-strand fiber each (mains on one fiber, backups on the other).</p></div><div class="card"><h4>Before you power up</h4><p class="small" style="margin:0"><b>Flip the strands on the CVT side</b> for both house screens.<br>Custom formats: 2688 × 1344 for GFX 1 and GFX 2 inputs and main wall outputs (E2 EDID locked). 5376 × 1344 for Milli A/B wide. 1152 × 1536 E2 EDID locked.</p></div></div>';
   if(S.cam){var C=S.cam;
   h+='<h3>Camera &amp; record wiring</h3><button class="hero-shot" data-lb="cam" data-i="0" style="background:#fff"><img src="files/cam-flow.svg" alt="Camera and record signal flow: cameras, CCUs, Video Assists, fiber, ATEM, recorders, E2"></button><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px">'+fileBtn("campdf","Download wiring PDF")+'<a class="btn" href="files/NP-Chicago-Camera-Record-Wiring.pdf" target="_blank" rel="noopener">'+ICON.open+'Open PDF</a></div>';
   var io=function(rows,h1){return '<div class="tw"><table><thead><tr><th>'+h1+'</th><th>Feed</th><th>Path</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td class="mono"><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td><td class="sub">'+esc(r[2])+'</td></tr>'}).join('')+'</tbody></table></div>'};
@@ -409,6 +415,8 @@ R.video=function(){
 R.audio=function(){
   var h=head("audio","Audio","PA updated Oct 8: 12 Berlin mains, 4 iQ12 stage mains and 4 JBL PRX 18\" subs.");
   h+='<div class="grid g3"><div class="card"><h4>Mains</h4><div class="mono" style="font-size:22px;font-weight:600">12 × Berlin</div><p class="muted small" style="margin:4px 0 0">6 per side (L/R line arrays on CAD)</p></div><div class="card"><h4>Stage mains</h4><div class="mono" style="font-size:22px;font-weight:600">4 × iQ12</div><p class="muted small" style="margin:4px 0 0">Turbosound</p></div><div class="card"><h4>Subs</h4><div class="mono" style="font-size:22px;font-weight:600">4 × JBL PRX 18\"</div><p class="muted small" style="margin:4px 0 0">Downstage, per CAD</p></div></div>';
+  if(S.audioCov){var A=S.audioCov;h+='<h3>Coverage map</h3><button class="hero-shot" data-lb="au" data-i="0" style="background:#fff"><img src="files/audio-coverage.png" alt="Audio coverage heat map: plan view of the ballroom with numbered speaker positions, and side view through Truss 1"></button><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 10px">'+fileBtn("aupdf","Download coverage report")+'<a class="btn" href="files/Audio-Coverage-EASE.pdf" target="_blank" rel="noopener">'+ICON.open+'Open PDF</a><span class="muted small">'+esc(A.by)+' · average '+esc(A.avg)+', broadband</span></div>';
+  h+='<div class="tw"><table><thead><tr><th>#</th><th>Source</th><th>Position</th><th>Boxes</th><th>Height</th><th>Aim</th></tr></thead><tbody>'+A.src.map(function(r){return '<tr><td class="mono"><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td><td class="sub">'+esc(r[2])+'</td><td>'+esc(r[3])+'</td><td class="mono">'+esc(r[4])+'</td><td class="sub">'+esc(r[5])+'</td></tr>'}).join('')+'</tbody></table></div><p class="muted small" style="margin-top:6px">Numbers match the plan view. Boxes are Turbosound Berlin TBV123.</p>';}
   h+='<h3>Gear</h3>'+gearTable("audio")+openBlock(DEPT_FOR.audio)+'<h3>Crew</h3>'+crewFor(["Audio"]);
   return h;
 };
@@ -469,6 +477,40 @@ R.crew=function(){
   h+=openBlock(["Travel","Schedule"],"Open travel items");
   return h;
 };
+R.callsheet=function(){
+  var C=S.callsheet;var h=head("callsheet","Crew Call","Positions and call times for each day. Our crew plus local labor; numbered slots are filled by the local. All times Central.",'<button class="btn" onclick="window.print()">'+ICON.dl+'Print</button>');
+  if(!C)return h+'<p class="muted">No call sheet yet.</p>';
+  var sel=window.__csday||C.days[0].date;
+  h+='<div class="filters" style="margin-bottom:12px">'+C.days.map(function(x){var dt=new Date(x.date+"T12:00:00");return '<button class="chip" data-csday="'+x.date+'" aria-pressed="'+(sel===x.date)+'">'+x.wd+' '+dt.toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</button>'}).join("")+'<button class="chip" data-csday="all" aria-pressed="'+(sel==="all")+'">All days</button></div>';
+  var lp=function(r){return r.local?'<span class="pill src mono">'+esc(r.local)+'</span>':r.ours?'<b>'+esc(r.name)+'</b> <span class="pill info">Digerati</span>':(r.name==="TBD"?'<span class="muted">TBD</span>':esc(r.name))};
+  if(sel==="all"){
+    var byR={};C.days.forEach(function(x,di){x.rows.forEach(function(r){(byR[r.r]=byR[r.r]||{r:r.r,cells:[]}).cells[di]=r})});
+    var keys=Object.keys(byR).map(Number).sort(function(a,b){return a-b});
+    h+='<div class="tw"><table><thead><tr><th>Position</th><th>Name / local</th>'+C.days.map(function(x){var dt=new Date(x.date+"T12:00:00");return '<th style="white-space:nowrap">'+x.wd+' '+dt.getDate()+'</th>'}).join("")+'</tr></thead><tbody>';var lg=null;
+    keys.forEach(function(k){var row=byR[k];var first=row.cells.filter(Boolean)[0];if(first.g!==lg){h+='<tr class="grouprow"><td colspan="'+(2+C.days.length)+'">'+esc(first.g)+'</td></tr>';lg=first.g}
+      h+='<tr><td>'+esc(first.role)+'</td><td>'+lp(first)+'</td>'+C.days.map(function(x,di){var c=row.cells[di];return '<td class="mono small" style="white-space:nowrap">'+(c?esc(c.t)+(c.role!==first.role?'<div class="muted" style="font-family:var(--body)">'+esc(c.role)+'</div>':''):'<span class="muted">—</span>')+'</td>'}).join("")+'</tr>'});
+    h+='</tbody></table></div>';
+  } else {
+    var D=C.days.filter(function(x){return x.date===sel})[0];var cnt={ours:0,"#110":0,"#2":0,"#727":0,other:0};D.rows.forEach(function(r){if(r.ours)cnt.ours++;else if(r.local)cnt[r.local]=(cnt[r.local]||0)+1;else cnt.other++});
+    h+='<div class="grid g3" style="margin-bottom:12px"><div class="card"><h4>'+esc(D.label)+'</h4><div class="mono" style="font-size:22px;font-weight:600">'+D.rows.length+' positions</div><p class="muted small" style="margin:4px 0 0">'+cnt.ours+' Digerati · '+cnt.other+' named / TBD</p></div><div class="card"><h4>Local labor</h4><div class="mono" style="font-size:22px;font-weight:600">'+(cnt["#110"]+cnt["#2"]+cnt["#727"])+' calls</div><p class="muted small" style="margin:4px 0 0">#110 × '+cnt["#110"]+' · #2 × '+cnt["#2"]+' · #727 × '+cnt["#727"]+'</p></div><div class="card"><h4>First call</h4><div class="mono" style="font-size:22px;font-weight:600">'+esc(D.rows[0].t.split("–")[0])+'</div><p class="muted small" style="margin:4px 0 0">Earliest crew in</p></div></div>';
+    var lg=null;h+='<div class="tw"><table><thead><tr><th>Time</th><th>Position</th><th>Name / local</th></tr></thead><tbody>'+D.rows.map(function(r){var g='';if(r.g!==lg){g='<tr class="grouprow"><td colspan="3">'+esc(r.g)+'</td></tr>';lg=r.g}return g+'<tr><td class="mono small" style="white-space:nowrap">'+esc(r.t)+'</td><td>'+esc(r.role)+'</td><td>'+lp(r)+'</td></tr>'}).join("")+'</tbody></table></div>';
+  }
+  h+='<div class="grid g2" style="margin-top:16px"><div class="card"><h4>Local numbers</h4><dl class="kv small">'+C.key.map(function(k){return '<dt class="mono">'+esc(k[0])+'</dt><dd>'+esc(k[1])+'</dd>'}).join("")+'</dl><p class="muted small" style="margin:8px 0 0">"Shadow" positions are local techs paired with the lead for that seat.</p></div><div class="card"><h4>Also on site · Digerati</h4><dl class="kv small">'+C.also.map(function(k){return '<dt>'+esc(k[0])+'</dt><dd>'+esc(k[1])+'</dd>'}).join("")+'</dl><p class="muted small" style="margin:8px 0 0">Not on the local call sheet. Contacts on Crew &amp; Travel.</p></div></div>';
+  h+='<h3>Meal breaks</h3><div class="tw"><table><thead><tr><th>Day</th><th>Time</th><th>Meal</th><th>Notes</th></tr></thead><tbody>'+C.meals.map(function(m){return '<tr><td style="white-space:nowrap">'+esc(m[0])+'</td><td class="mono small" style="white-space:nowrap">'+esc(m[1])+'</td><td>'+esc(m[2])+'</td><td class="sub">'+esc(m[3])+'</td></tr>'}).join("")+'</tbody></table></div>';
+  h+=openBlock(["Schedule"],"Open schedule items");
+  return h;
+};
+R.trucking=function(){
+  var T=S.trucking;var h=head("trucking","Trucking","Route and dock times for the truck into the Hyatt Regency Chicago.");
+  if(!T)return h;
+  h+='<button class="hero-shot" data-lb="truck" data-i="0" style="background:#fff"><img src="files/truck-route.jpg" alt="Truck route: south on Columbus Dr over the river, west on Lower Wacker, south on Lower Stetson Ave to the Hyatt dock"></button>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px"><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Lower+Stetson+Ave+%26+Lower+Wacker+Dr+Chicago+IL">'+ICON.open+'Open in Google Maps</a><a class="btn" href="files/truck-route.jpg" download>'+ICON.dl+'Save route image</a></div>';
+  h+='<div class="grid g2"><div class="card"><h4>Destination</h4><p style="margin:0;font-weight:600">'+esc(T.dest)+'</p><p class="muted small" style="margin:4px 0 0">'+esc(T.addr)+'</p></div><div class="card"><h4>Contacts</h4><dl class="kv small">'+T.contacts.map(function(c){return '<dt>'+esc(c[0])+'</dt><dd><a class="mono" href="tel:'+esc(c[2].replace(/[^0-9]/g,""))+'">'+esc(c[2])+'</a>'+(c[1]?' <span class="muted">· '+esc(c[1])+'</span>':'')+'</dd>'}).join("")+'</dl></div></div>';
+  h+='<h3>Route</h3><ol class="steps" style="margin:0;padding:0;list-style:none;display:grid;gap:8px">'+T.steps.map(function(s,i){return '<li class="card" style="display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:start"><span style="width:30px;height:30px;border-radius:50%;background:var(--crit);color:#fff;display:grid;place-items:center;font-weight:700">'+(i+1)+'</span><div><b>'+esc(s[0])+'</b><p class="small muted" style="margin:2px 0 0">'+esc(s[1])+'</p></div></li>'}).join("")+'</ol>';
+  h+='<h3>Dock windows · Central time</h3><div class="grid g2">'+T.windows.map(function(w){return '<div class="card"><h4>'+esc(w[0])+'</h4><div class="mono" style="font-size:20px;font-weight:600">'+esc(w[1])+'</div><p class="small" style="margin:4px 0 0">'+esc(w[2])+'</p></div>'}).join("")+'</div>';
+  h+=openBlock(["Logistics"],"Open trucking items");
+  return h;
+};
 R.checks=function(){
   var h=head("checks","Cross-check","Differences found comparing the CAD, our proposal and each vendor quote. Mark items resolved as they're answered.");
   var depts=["All"].concat(Array.from(new Set(S.issues.map(function(i){return i.dept}))));
@@ -486,7 +528,7 @@ R.brand=function(){
   var cols=[["Azure","#28519D"],["Verde","#188369"],["Cerise","#D33867"],["Plum","#5F2C8F"],["Light Azure","#D5F1FE"],["Light Verde","#D1F4EC"],["Light Cerise","#FAD8E3"],["Light Plum","#E7D8F7"],["Black","#1A1B2E"],["Gray","#596267"],["Dove","#E2E4E4"],["Frost","#F6F6F6"]];
   h+='<h3>Digital palette · tap to copy</h3><div class="sw">'+cols.map(function(c){return '<button class="c" data-hex="'+c[1]+'"><i style="background:'+c[1]+'"></i><span><b>'+c[0]+'</b><br><span class="mono">'+c[1]+'</span></span></button>'}).join("")+'</div>';
   h+='<div class="note" style="margin-top:12px">Logo: light Spark with the logotype in the darker color. Don\'t recolor, rotate, add effects or place on busy backgrounds. Brand photography uses NP people only — no stock faces.</div>';
-  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","campdf","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
+  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","vvpdf","campdf","aupdf","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
   h+='<p class="muted small" style="margin-top:10px">Fonts are Nixon Peabody\'s licensed copies, shared for this show\'s content only.</p>';
   return h;
 };
@@ -520,7 +562,7 @@ var BLANK={crew:{role:"",dept:"Video",name:"",co:"",phone:"",email:"",inote:"",a
 /* lightbox */
 var LB=null;
 function cadList(){return CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}}).concat([{src:"files/boh-layout.jpg",t:"Tech layout · back of house"}])}
-function groupList(g){if(g==="cam")return [{src:"files/cam-flow.svg",t:"Camera & record signal flow"}];if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
+function groupList(g){if(g==="vv")return [{src:"files/video-village-flow.jpg",t:"Video village signal flow · E2 inputs, outputs and LED processors"}];if(g==="au")return [{src:"files/audio-coverage.png",t:"Audio coverage · plan and side view"}];if(g==="truck")return [{src:"files/truck-route.jpg",t:"Truck route to the Hyatt loading dock"}];if(g==="cam")return [{src:"files/cam-flow.svg",t:"Camera & record signal flow"}];if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
 function openLB(g,i){
   var list=groupList(g);LB={g:g,i:i,list:list,actual:false};
   var el=document.createElement("div");el.className="lb";el.id="lb";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
@@ -585,6 +627,7 @@ document.addEventListener("click",function(ev){
   if(t.hasAttribute("data-lbfs")){var el=$("#lb");try{var p=el.requestFullscreen&&el.requestFullscreen();if(p&&p.catch)p.catch(function(){toast("Full screen isn't available here")})}catch(e){toast("Full screen isn't available here")}return}
   if(t.hasAttribute("data-hex")){copy(t.getAttribute("data-hex"),t.getAttribute("data-hex")+" copied");return}
   if(t.hasAttribute("data-if")){issueFilter=t.getAttribute("data-if");render();return}
+  if(t.hasAttribute("data-csday")){window.__csday=t.getAttribute("data-csday");render();return}
   if(t.hasAttribute("data-idept")){window.__idept=t.getAttribute("data-idept");render();return}
   if(t.hasAttribute("data-dept")){window.__idept=t.getAttribute("data-dept");issueFilter="open";return}
   if(t.hasAttribute("data-edit")){editing=!editing;render();return}
