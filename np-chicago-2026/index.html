@@ -203,9 +203,10 @@ var FILES={
  cad:{name:"Tallen CAD v5 — full set (6 sheets)",path:"files/NP-Chicago-CAD-v5.pdf",size:"9.7 MB"},
  ledMap:{name:"LED pixel map + Novastar layout",path:"files/LED-Pixel-Map.pdf",size:"1.7 MB"},
  brand:{name:"Nixon Peabody brand guidelines (Feb 2025)",path:"files/NP-Brand-Guidelines-2025.pdf",size:"2.6 MB"},
+ campdf:{name:"Camera & record wiring (PDF)",path:"files/NP-Chicago-Camera-Record-Wiring.pdf",size:"0.2 MB"},
  lxpdf:{name:"Lighting power & circuit plan (PDF)",path:"files/NP-Chicago-Lighting-Power-Plan.pdf",size:"0.2 MB"},
  fonts:{name:"Brand fonts — Tiempos Headline (12) + Soleil (17), OTF",zip:"NP-Brand-Fonts-Tiempos-Soleil.zip",bundle:FONTS,size:"≈ 4 MB zip"},
- allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf"],size:"≈ 13 MB zip"},
+ allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf","files/NP-Chicago-Camera-Record-Wiring.pdf"],size:"≈ 13 MB zip"},
  allBrand:{name:"Brand package — guidelines + fonts",zip:"NP-Chicago-Brand-Package.zip",bundle:["files/NP-Brand-Guidelines-2025.pdf"].concat(FONTS),size:"≈ 7 MB zip"}
 };
 var RENDERS=[
@@ -395,6 +396,13 @@ R.video=function(){
   var h=head("video","Video & Camera","Switching, playback, prompter, cameras, displays and show control.");
   h+='<div class="grid g3"><div class="card"><h4>Back of house</h4><p class="small muted" style="margin:0">Upstage row: Playback · GFX · racks (Wide GFX, E2 1, E2 2, LED Proc) · E2 · Prompter<br>Downstage row: REC · Cam Switch · AI Tech<br>A2 angled at the drape line</p></div><div class="card"><h4>FOH riser</h4><p class="small muted" style="margin:0">18\' × 8\' × 16"h at the back of house: Audio · Lighting · TD</p></div><div class="card"><h4>Cameras</h4><p class="small muted" style="margin:0">2 × UC4000 on 8\' × 6\' × 24" risers ≈ 90\' from stage; PTZ ≈ 105\'</p></div></div>';
   h+='<h3>Back of house layout</h3><button class="hero-shot" data-lb="boh" data-i="0" style="background:#fff"><img src="files/boh-layout.jpg" alt="Back of house layout: tech tables, racks and A2 position"></button><p class="muted small" style="margin:6px 0 0">Tap to view full screen.</p>';
+  if(S.cam){var C=S.cam;
+  h+='<h3>Camera &amp; record wiring</h3><button class="hero-shot" data-lb="cam" data-i="0" style="background:#fff"><img src="files/cam-flow.svg" alt="Camera and record signal flow: cameras, CCUs, Video Assists, fiber, ATEM, recorders, E2"></button><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px">'+fileBtn("campdf","Download wiring PDF")+'<a class="btn" href="files/NP-Chicago-Camera-Record-Wiring.pdf" target="_blank" rel="noopener">'+ICON.open+'Open PDF</a></div>';
+  var io=function(rows,h1){return '<div class="tw"><table><thead><tr><th>'+h1+'</th><th>Feed</th><th>Path</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td class="mono"><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td><td class="sub">'+esc(r[2])+'</td></tr>'}).join('')+'</tbody></table></div>'};
+  h+='<div class="grid g2">'+io(C.ins,'ATEM input')+io(C.outs,'ATEM output')+'</div>';
+  h+='<p class="note" style="margin-top:12px">The ATEM SDI Extreme ISO is HD only. Set both CCUs and both PTZs to 1080p at the show frame rate. Assign outputs in ATEM Software Control → Settings → Outputs. PTZs need local AC power; fiber doesn\'t carry PoE. Each PTZ gets its own TAC4/TAC6: <b>Fiber A</b> → PTZ 1, <b>Fiber B</b> → PTZ 2. Strands 1–2 carry video (BMD fiber converters), strands 3–4 carry the network (media converters). IN 5 is E2 graphics.</p>';
+  h+='<details style="margin-top:12px" open><summary style="cursor:pointer;font-weight:600">Cable runs · port to port ('+C.runs.length+')</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th>ID</th><th>From</th><th>To</th><th>Cable</th><th style="text-align:right">Length</th></tr></thead><tbody>'+C.runs.map(function(r){var c=C.col[r.t];return '<tr><td class="mono"><b style="color:'+c+'">'+esc(r.id)+'</b></td><td>'+esc(r.from)+'<div class="sub">'+esc(r.fp)+'</div></td><td>'+esc(r.to)+'<div class="sub">'+esc(r.tp)+'</div></td><td class="sub"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+c+';margin-right:6px;vertical-align:-1px"></span>'+esc(C.tname[r.t])+'</td><td class="q" style="width:auto">'+esc(r.len)+'</td></tr>'}).join('')+'</tbody></table></div></details>';
+  h+='<h3>What each piece does</h3><div class="grid g2">'+C.cards.map(function(c){return '<div class="card"><h4>'+esc(c.name)+'</h4><p class="small" style="margin:0 0 6px">'+esc(c.what)+'</p><p class="small" style="margin:0 0 8px;color:var(--accent)">'+esc(c.conn)+'</p>'+(c.url&&c.url!=="#"?'<a class="btn" href="'+esc(c.url)+'" target="_blank" rel="noopener">'+ICON.open+'Product page &amp; photos</a>':'')+'</div>'}).join('')+'</div>';}
   h+='<h3>Gear</h3>'+gearTable("video")+openBlock(DEPT_FOR.video)+'<h3>Crew</h3>'+crewFor(["Video"]);
   return h;
 };
@@ -478,7 +486,7 @@ R.brand=function(){
   var cols=[["Azure","#28519D"],["Verde","#188369"],["Cerise","#D33867"],["Plum","#5F2C8F"],["Light Azure","#D5F1FE"],["Light Verde","#D1F4EC"],["Light Cerise","#FAD8E3"],["Light Plum","#E7D8F7"],["Black","#1A1B2E"],["Gray","#596267"],["Dove","#E2E4E4"],["Frost","#F6F6F6"]];
   h+='<h3>Digital palette · tap to copy</h3><div class="sw">'+cols.map(function(c){return '<button class="c" data-hex="'+c[1]+'"><i style="background:'+c[1]+'"></i><span><b>'+c[0]+'</b><br><span class="mono">'+c[1]+'</span></span></button>'}).join("")+'</div>';
   h+='<div class="note" style="margin-top:12px">Logo: light Spark with the logotype in the darker color. Don\'t recolor, rotate, add effects or place on busy backgrounds. Brand photography uses NP people only — no stock faces.</div>';
-  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
+  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","campdf","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
   h+='<p class="muted small" style="margin-top:10px">Fonts are Nixon Peabody\'s licensed copies, shared for this show\'s content only.</p>';
   return h;
 };
@@ -512,7 +520,7 @@ var BLANK={crew:{role:"",dept:"Video",name:"",co:"",phone:"",email:"",inote:"",a
 /* lightbox */
 var LB=null;
 function cadList(){return CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}}).concat([{src:"files/boh-layout.jpg",t:"Tech layout · back of house"}])}
-function groupList(g){if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
+function groupList(g){if(g==="cam")return [{src:"files/cam-flow.svg",t:"Camera & record signal flow"}];if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
 function openLB(g,i){
   var list=groupList(g);LB={g:g,i:i,list:list,actual:false};
   var el=document.createElement("div");el.className="lb";el.id="lb";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
