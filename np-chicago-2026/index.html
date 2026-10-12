@@ -200,6 +200,12 @@ tr.grouprow.ccg td{background:color-mix(in srgb,var(--cc) 14%,var(--surface-2));
 .cckey{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}
 .cckey div{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);border-left:6px solid var(--cc)}
 .cckey b{display:block;font-size:14px}.cckey span{font-size:12px;color:var(--muted)}
+.mbar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin:4px 0 10px}
+.mbar span{display:block;height:100%}
+.mlist{display:grid;gap:6px}.mlist div{display:grid;grid-template-columns:14px minmax(0,1fr) auto auto;gap:10px;align-items:center;font-size:14px}
+.mlist .num{font-family:var(--mono,ui-monospace,monospace);font-weight:600;text-align:right}
+.mlist .pct{color:var(--muted);font-size:12px;min-width:38px;text-align:right}
+@media print{nav.rail,.sechead .tools,.filters,header .tools{display:none!important}}
 </style>
 <div id="app"></div>
 <script type="application/json" id="show-data">{}</script>
@@ -247,6 +253,7 @@ var SECTIONS=[
  {id:"crew",t:"Crew & Travel",grp:"Logistics"},
  {id:"callsheet",t:"Crew Call",grp:"Logistics"},
  {id:"trucking",t:"Trucking",grp:"Logistics"},
+ {id:"manifest",t:"Manifest & Weights",grp:"Logistics"},
  {id:"checks",t:"Cross-check",grp:"Logistics"},
  {id:"brand",t:"Brand & Files",grp:"Logistics"}
 ];
@@ -351,7 +358,7 @@ R.send=function(){
   var stale=S.savedAt&&(!S.crewSyncedAt||new Date(S.savedAt)>new Date(S.crewSyncedAt));
   h+='<div class="note" style="'+(stale?'border-color:var(--warn);background:var(--warn-soft)':'')+'">Dashboard last saved: <b>'+fmt(S.savedAt)+'</b> · Crew view last updated: <b>'+fmt(S.crewSyncedAt)+'</b>'+(stale?'<br>You have changes the crew can\'t see yet. Ask Claude to "sync the crew view".':'')+'</div>';
   if(!S.crewUrl){h+='<p class="muted">The crew view link isn\'t set yet.</p>';return h}
-  var who={overview:"Everyone",renders:"Client, everyone",cad:"Everyone, Tallen",led:"LED engineer, content",video:"Video, E2 op, prompter, camera",audio:"Audio",lighting:"Lighting, Nic",staging:"Everyone",sourcing:"Brian / gear pickups",crew:"Traveling crew",callsheet:"All crew + local labor steward",trucking:"Truck driver",brand:"GFX, playback, content"};
+  var who={overview:"Everyone",renders:"Client, everyone",cad:"Everyone, Tallen",led:"LED engineer, content",video:"Video, E2 op, prompter, camera",audio:"Audio",lighting:"Lighting, Nic",staging:"Everyone",sourcing:"Brian / gear pickups",crew:"Traveling crew",callsheet:"All crew + local labor steward",trucking:"Truck driver",manifest:"Truck driver, warehouse, crew chiefs",brand:"GFX, playback, content"};
   h+='<div class="tw" style="margin-top:14px"><table><thead><tr><th>Page</th><th>Send to</th><th></th></tr></thead><tbody>'+
   SECTIONS.filter(function(s){return s.id!=="send"&&s.id!=="checks"&&s.id!=="sourcing"}).map(function(s){return '<tr><td style="font-weight:600">'+esc(s.t)+'</td><td class="sub">'+esc(who[s.id]||"")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn" data-copy="'+s.id+'">'+ICON.link+'Copy link</button> <a class="btn" href="'+esc(S.crewUrl.split("#")[0]+"#"+s.id)+'" target="_blank" rel="noopener">'+ICON.open+'Preview</a></td></tr>'}).join("")+
   '</tbody></table></div>';
@@ -546,6 +553,38 @@ R.callsheet=function(){
   h+=openBlock(["Schedule"],"Open schedule items");
   return h;
 };
+function mTare(M,l){return typeof l.tare==="string"?(+M.tare[l.tare]||0):(+l.tare||0)}
+function mLine(M,l){return (+l.qty||0)*(+l.unit||0)+(+l.cases||0)*mTare(M,l)}
+function mFmt(n){return Math.round(n).toLocaleString("en-US")}
+var MORDER=["video","audio","lighting","power","drape","staging"],MNAME={video:"Video",audio:"Audio",lighting:"Lighting",power:"Power",drape:"Drape / soft goods",staging:"Staging & truck pack"};
+function mCSV(M){var rows=[["Department","Qty","Item","Packed in","Cases","Each lb","Case tare lb","Line total lb","Basis","Loads at","Notes"]];M.lines.forEach(function(l){rows.push([MNAME[l.dept],l.qty,l.item,l.pack,l.cases,l.unit,mTare(M,l),Math.round(mLine(M,l)),l.basis,l.loads,l.note||""])});var t=M.lines.reduce(function(s,l){return s+mLine(M,l)},0);rows.push(["TOTAL","","","","","","",Math.round(t),"","",""]);
+  return rows.map(function(r){return r.map(function(c){c=String(c==null?"":c);return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(",")}).join("\n")}
+R.manifest=function(){
+  var M=S.manifest;var h=head("manifest","Manifest & Weights","Everything going on the truck, how it's packed and what it weighs. Totals add up automatically.",'<button class="btn" onclick="window.print()">'+ICON.dl+'Print</button><button class="btn" data-mcsv="1">'+ICON.dl+'CSV</button>');
+  if(!M)return h+'<p class="muted">No manifest yet.</p>';
+  var tot=0,by={},cases=0,loose=0;MORDER.forEach(function(k){by[k]=0});
+  M.lines.forEach(function(l){var w=mLine(M,l);tot+=w;by[l.dept]=(by[l.dept]||0)+w;cases+=(+l.cases||0);if(!(+l.cases))loose+=(+l.qty||0)});
+  var spec=M.lines.filter(function(l){return /^Spec/.test(l.basis)}).reduce(function(s,l){return s+mLine(M,l)},0);
+  h+='<div class="grid g3" style="margin-bottom:12px"><div class="card"><h4>Truck weight · estimated</h4><div class="mono" style="font-size:26px;font-weight:700">'+mFmt(tot)+' lb</div><p class="muted small" style="margin:4px 0 0">'+mFmt(tot*0.45359)+' kg · '+esc(M.truck)+'</p></div><div class="card"><h4>Pieces</h4><div class="mono" style="font-size:26px;font-weight:700">'+cases+' cases</div><p class="muted small" style="margin:4px 0 0">+ '+loose+' loose items (speakers in covers, stands, ramps, ladders)</p></div><div class="card"><h4>Case weights</h4>'+
+    (editing?'<label class="small">Half pack, empty (lb) <input type="number" data-recalc="1" data-bind="manifest.tare.half" value="'+esc(M.tare.half)+'" style="width:80px"></label><br><label class="small">Pelican, empty (lb) <input type="number" data-recalc="1" data-bind="manifest.tare.pelican" value="'+esc(M.tare.pelican)+'" style="width:80px"></label>':'<div class="mono" style="font-size:18px;font-weight:600">Half pack '+esc(M.tare.half)+' lb · Pelican '+esc(M.tare.pelican)+' lb</div><p class="muted small" style="margin:4px 0 0">Empty case weight, added to every case of that type</p>')+'</div></div>';
+  h+='<div class="card" style="margin-bottom:14px"><h4>By department</h4><div class="mbar" role="img" aria-label="Weight by department">'+MORDER.map(function(k){var c=CASE[k]?CASE[k].c:"#8A93A6";return by[k]?'<span title="'+esc(MNAME[k])+' '+mFmt(by[k])+' lb" style="width:'+(by[k]/tot*100)+'%;background:'+c+'"></span>':''}).join("")+'</div><div class="mlist">'+MORDER.map(function(k){var c=CASE[k]?CASE[k].c:"#8A93A6";return '<div><span class="tape" style="background:'+c+'"></span><span>'+esc(MNAME[k])+(CASE[k]?' <span class="muted small">· '+CASE[k].n+' tape</span>':'')+'</span><span class="num">'+mFmt(by[k])+' lb</span><span class="pct">'+Math.round(by[k]/tot*100)+'%</span></div>'}).join("")+'</div><p class="muted small" style="margin:10px 0 0">'+Math.round(spec/tot*100)+'% of the weight is from manufacturer specs; the rest is estimated.</p></div>';
+  var cols=editing?'<th style="text-align:right">Qty</th><th>Item</th><th>Packed in</th><th style="text-align:right">Cases</th><th style="text-align:right">Each lb</th><th style="text-align:right">Total lb</th>':'<th style="text-align:right">Qty</th><th>Item</th><th>Packed in</th><th style="text-align:right">Cases</th><th style="text-align:right">Each lb</th><th style="text-align:right">Total lb</th><th>Basis</th>'+(CREW?'':'<th>Source</th>')+'<th>Loads at</th>';
+  var nc=editing?6:(CREW?8:9);
+  h+='<div class="tw"><table><thead><tr>'+cols+'</tr></thead><tbody>';
+  MORDER.forEach(function(k){var lines=M.lines.map(function(l,i){l._i=i;return l}).filter(function(l){return l.dept===k});if(!lines.length)return;var c=CASE[k];
+    h+='<tr class="grouprow'+(c?' ccg':'')+'" style="'+ccStyle(k)+'"><td colspan="5">'+(c?'<span class="tape" style="background:'+c.c+';margin-right:8px;vertical-align:-1px"></span>':'')+esc(MNAME[k])+(c?' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:500">· '+c.n+' tape</span>':'')+'</td><td class="q" style="width:auto">'+mFmt(by[k])+'</td>'+(nc>6?'<td colspan="'+(nc-6)+'"></td>':'')+'</tr>';
+    lines.forEach(function(l){var i=l._i,w=mLine(M,l),cs=(+l.cases?l.cases+(typeof l.tare==="string"?'':'')+'':'—');
+      if(editing){var inp=function(f,wd){return '<input type="number" step="any" data-recalc="1" data-bind="manifest.lines.'+i+'.'+f+'" value="'+esc(l[f])+'" style="width:'+wd+'px;min-width:0;text-align:right">'};
+        h+='<tr'+(c?' class="ccrow" style="'+ccStyle(k)+'"':'')+'><td class="q">'+inp("qty",60)+'</td><td>'+esc(l.item)+'</td><td class="sub">'+esc(l.pack)+'</td><td class="q">'+inp("cases",56)+'</td><td class="q">'+inp("unit",70)+'</td><td class="q" style="width:auto">'+mFmt(w)+'</td></tr>';return}
+      h+='<tr'+(c?' class="ccrow" style="'+ccStyle(k)+'"':'')+'><td class="q">'+esc(l.qty)+'</td><td>'+esc(l.item)+(l.note?'<div class="sub small">'+esc(l.note)+'</div>':'')+'</td><td class="sub">'+esc(l.pack)+'</td><td class="q" style="width:auto">'+cs+'</td><td class="q" style="width:auto">'+esc(l.unit)+'</td><td class="q" style="width:auto">'+mFmt(w)+'</td><td>'+(/^Spec/.test(l.basis)?'<span class="pill ok">'+esc(l.basis)+'</span>':'<span class="pill src">'+esc(l.basis)+'</span>')+'</td>'+(CREW?'':'<td>'+srcPill(l.src)+'</td>')+'<td class="sub small">'+esc(l.loads)+'</td></tr>'});
+  });
+  h+='<tr class="grouprow"><td colspan="5">Total · '+cases+' cases + '+loose+' loose</td><td class="q" style="width:auto">'+mFmt(tot)+'</td>'+(nc>6?'<td colspan="'+(nc-6)+'"></td>':'')+'</tr></tbody></table></div>';
+  if(!CREW)h+='<p class="muted small" style="margin-top:6px">'+(editing?'Change quantities, cases or weights and the totals update when you leave the field. Save to keep it.':'Tap Edit to change quantities, case counts or weights.')+'</p>';
+  h+='<h3>Not on this truck</h3><div class="tw"><table><thead><tr><th>What</th><th>How it gets there</th><th>Includes</th></tr></thead><tbody>'+M.separate.map(function(s){return '<tr><td style="font-weight:600">'+esc(s[0])+'</td><td>'+esc(s[1])+'</td><td class="sub">'+esc(s[2])+'</td></tr>'}).join("")+'</tbody></table></div>';
+  h+='<div class="note" style="margin-top:14px"><b>About these numbers.</b><ul style="margin:6px 0 0;padding-left:18px">'+M.verify.map(function(v){return '<li>'+esc(v)+'</li>'}).join("")+'</ul></div>';
+  h+=openBlock(["Logistics"],"Open trucking items");
+  return h;
+};
 R.trucking=function(){
   var T=S.trucking;var h=head("trucking","Trucking","Route and dock times for the truck into the Hyatt Regency Chicago.");
   if(!T)return h;
@@ -673,6 +712,7 @@ document.addEventListener("click",function(ev){
   if(t.hasAttribute("data-lbfs")){var el=$("#lb");try{var p=el.requestFullscreen&&el.requestFullscreen();if(p&&p.catch)p.catch(function(){toast("Full screen isn't available here")})}catch(e){toast("Full screen isn't available here")}return}
   if(t.hasAttribute("data-hex")){copy(t.getAttribute("data-hex"),t.getAttribute("data-hex")+" copied");return}
   if(t.hasAttribute("data-if")){issueFilter=t.getAttribute("data-if");render();return}
+  if(t.hasAttribute("data-mcsv")){var b=new Blob([mCSV(S.manifest)],{type:"text/csv"});if(dl){dl.save({filename:"NP-Chicago-Truck-Manifest.csv",data:b}).then(function(){},function(){});return}var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download="NP-Chicago-Truck-Manifest.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},2000);return}
   if(t.hasAttribute("data-csday")){window.__csday=t.getAttribute("data-csday");render();return}
   if(t.hasAttribute("data-idept")){window.__idept=t.getAttribute("data-idept");render();return}
   if(t.hasAttribute("data-dept")){window.__idept=t.getAttribute("data-dept");issueFilter="open";return}
