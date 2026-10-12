@@ -188,6 +188,18 @@ tr.grouprow td{background:var(--surface-2);font-family:var(--display);font-weigh
 .upd:last-child{border-bottom:0}
 textarea.ed{width:100%;min-height:60px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:4px;padding:6px;font:inherit}
 @media (prefers-reduced-motion:no-preference){.btn,.shot,nav.rail a{transition:border-color .15s,background-color .15s}}
+.tape{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+nav.rail a.cc{border-left:4px solid var(--cc);padding-left:8px}
+nav.rail a.cc .lbl{display:inline-flex;align-items:center;gap:8px}
+nav.rail a.cc[aria-current="true"]{background:var(--cc);color:var(--cc-ink);border-left-color:var(--cc)}
+nav.rail a.cc[aria-current="true"] .tape{background:var(--cc-ink)!important}
+.tapechip{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:3px 11px 3px 4px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--cc);color:var(--cc-ink);margin:10px 0 0}
+.tapechip i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.35)}
+tr.ccrow td:first-child{box-shadow:inset 4px 0 0 var(--cc)}
+tr.grouprow.ccg td{background:color-mix(in srgb,var(--cc) 14%,var(--surface-2));box-shadow:inset 4px 0 0 var(--cc)}
+.cckey{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}
+.cckey div{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);border-left:6px solid var(--cc)}
+.cckey b{display:block;font-size:14px}.cckey span{font-size:12px;color:var(--muted)}
 </style>
 <div id="app"></div>
 <script type="application/json" id="show-data">{}</script>
@@ -239,6 +251,12 @@ var SECTIONS=[
  {id:"brand",t:"Brand & Files",grp:"Logistics"}
 ];
 if(CREW){SECTIONS=SECTIONS.filter(function(s){return s.id!=="checks"&&s.id!=="sourcing"})}else{SECTIONS.unshift({id:"send",t:"Send to crew",grp:"Show"})}
+var CASE={audio:{c:"#2563EB",ink:"#fff",n:"Blue",t:"Audio"},lighting:{c:"#EAB308",ink:"#1A1B2E",n:"Yellow",t:"Lighting"},power:{c:"#DC2626",ink:"#fff",n:"Red",t:"Power"},video:{c:"#16A34A",ink:"#fff",n:"Green",t:"Video"},drape:{c:"#EC4899",ink:"#fff",n:"Pink",t:"Drape / soft goods"}};
+var CASE_TAB={video:"video",led:"video",audio:"audio",lighting:"lighting",staging:"drape"};
+function ccStyle(k){var x=CASE[k];return x?'--cc:'+x.c+';--cc-ink:'+x.ink:''}
+function caseOf(dept,r){var t=((r.g||"")+" "+(r.item||"")).toLowerCase();if(/(^|\s)power(\s|$)|power pack|distro|socapex|soca |edison|l21|tri-tap|power strip|powercon|true1/.test(t))return "power";if(/drape|duvetyne|soft goods|spandex sock/.test(t)&&dept==="staging")return "drape";if(dept==="staging")return "";return CASE_TAB[dept]||""}
+function tapeChip(k){var x=CASE[k];if(!x)return "";return '<div class="tapechip" style="'+ccStyle(k)+'"><i></i>'+x.n+' tape · '+esc(x.t)+' cases</div>'}
+function caseKey(){return '<div class="cckey">'+Object.keys(CASE).map(function(k){var x=CASE[k];return '<div style="'+ccStyle(k)+'"><span class="tape" style="width:22px;height:22px;background:'+x.c+'"></span><span><b style="color:var(--ink)">'+x.n+'</b><span>'+esc(x.t)+'</span></span></div>'}).join("")+'</div>'}
 var DEPT_FOR={led:["LED","Power"],video:["Video"],audio:["Audio"],lighting:["Lighting","Power","Rigging"],staging:["Rigging","Power","Logistics"]};
 var editing=false, canWrite=null, dirty=false, art=null, dl=null, issueFilter="open";
 
@@ -268,7 +286,7 @@ function fileBtn(k,label){var f=FILES[k];return '<button class="btn" data-dl="'+
 
 /* ---------- section renderers ---------- */
 function head(id,title,desc,extra){
-  return '<div class="sechead"><div><h2>'+esc(title)+'</h2>'+(desc?'<p>'+desc+'</p>':'')+'</div><div class="tools">'+(extra||"")+
+  return '<div class="sechead"><div><h2>'+esc(title)+'</h2>'+(desc?'<p>'+desc+'</p>':'')+(CASE_TAB[id]?tapeChip(CASE_TAB[id]):'')+'</div><div class="tools">'+(extra||"")+
   '<button class="btn" data-copy="'+id+'">'+ICON.link+((!CREW&&id!=="checks"&&id!=="send")?'Copy crew link':'Copy link to this page')+'</button></div></div>';
 }
 function gearTable(key){
@@ -290,8 +308,8 @@ function gearTable(key){
   var h2='<div class="tw"><table><thead><tr><th style="text-align:right">Qty</th><th>Item</th>'+(CREW?'':'<th>Source</th>')+'<th>Notes</th></tr></thead><tbody>',last=null;
   rows.forEach(function(r){
     if(CREW&&r.hide)return;
-    if(r.g!==last){h2+='<tr class="grouprow"><td colspan="'+(CREW?3:4)+'">'+esc(r.g)+'</td></tr>';last=r.g}
-    h2+='<tr><td class="q">'+esc(r.qty)+'</td><td>'+esc(r.item)+'</td>'+(CREW?'':'<td>'+srcPill(r.src)+'</td>')+'<td class="sub">'+esc(r.note)+(!CREW&&r.inote?' <span class="pill warn">'+esc(r.inote)+'</span>':'')+(!CREW&&r.hide?' <span class="pill src">Hidden from crew</span>':'')+'</td></tr>';
+    var ck=caseOf(key,r);if(r.g!==last){var gk=caseOf(key,{g:r.g,item:""})||ck;h2+='<tr class="grouprow'+(gk?' ccg':'')+'" style="'+ccStyle(gk)+'"><td colspan="'+(CREW?3:4)+'">'+(gk?'<span class="tape" style="background:'+CASE[gk].c+';margin-right:8px;vertical-align:-1px"></span>':'')+esc(r.g)+(gk?' <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:500">· '+CASE[gk].n+' tape</span>':'')+'</td></tr>';last=r.g}
+    h2+='<tr'+(ck?' class="ccrow" style="'+ccStyle(ck)+'"':'')+'><td class="q">'+esc(r.qty)+'</td><td>'+esc(r.item)+'</td>'+(CREW?'':'<td>'+srcPill(r.src)+'</td>')+'<td class="sub">'+esc(r.note)+(!CREW&&r.inote?' <span class="pill warn">'+esc(r.inote)+'</span>':'')+(!CREW&&r.hide?' <span class="pill src">Hidden from crew</span>':'')+'</td></tr>';
   });
   return h2+'</tbody></table></div>';
 }
@@ -348,6 +366,7 @@ R.overview=function(){
   h+='<h3>Schedule · all times Central</h3><div class="days">'+S.schedule.map(function(x){var dt=new Date(x.date+"T12:00:00");var wd=dt.toLocaleDateString("en-US",{weekday:"short"});var md=dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});
     return '<div class="day'+(x.kind==="show"||x.kind==="work"?" show":"")+'"><span class="w">'+wd+' · '+esc(x.label)+'</span><span class="d">'+md+'</span><ul>'+x.items.map(function(i){return '<li>'+esc(i)+'</li>'}).join("")+'</ul></div>'}).join("")+'</div>';
   if(!CREW)h+='<h3>Latest updates</h3>'+(editing?updEdit():'<div class="card">'+(S.updates.length?S.updates.slice().reverse().map(function(u){return '<div class="upd"><span class="muted small mono">'+esc(u.date)+'</span><span>'+esc(u.text)+'</span></div>'}).join(""):'<p class="muted">No updates yet.</p>')+'</div>');
+  h+='<h3>Case color code</h3><p class="muted small" style="margin:-4px 0 10px">Tape on every case and the color on each page tell you which department it belongs to. Power is red wherever it shows up.</p>'+caseKey();
   h+='<h3>Room &amp; stage</h3><div class="card"><dl class="kv">'+S.room.map(function(r){return '<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>'}).join("")+'</dl></div>';
   if(!CREW)h+='<h3>Open items by department</h3><div class="grid g3">'+["Audio","Lighting","LED","Video","Power","Rigging","Travel","Schedule","Logistics"].map(function(dp){var n=openCount([dp]);return '<a class="card" style="text-decoration:none;color:inherit;display:flex;justify-content:space-between;align-items:center" href="#checks" data-dept="'+dp+'"><span style="font-weight:600">'+dp+'</span>'+(n?'<span class="pill '+(S.issues.some(function(i){return i.dept===dp&&i.sev==="high"&&i.status!=="resolved"})?"crit":"warn")+'">'+n+' open</span>':'<span class="pill ok">Clear</span>')+'</a>'}).join("")+'</div>';
   return h;
@@ -568,7 +587,7 @@ function render(){
   SECTIONS.forEach(function(s){
     if(s.grp!==grp){navH+='<div class="grp">'+s.grp+'</div>';grp=s.grp}
     var n=CREW?0:(DEPT_FOR[s.id]?openCount(DEPT_FOR[s.id]):(s.id==="checks"?openCount():0));
-    navH+='<a href="#'+s.id+'" aria-current="'+(s.id===cur)+'">'+s.t+(n?'<span class="pill '+(s.id===cur?'':'warn')+'">'+n+'</span>':'')+'</a>';
+    var cc=CASE_TAB[s.id];navH+='<a href="#'+s.id+'" aria-current="'+(s.id===cur)+'"'+(cc?' class="cc" style="'+ccStyle(cc)+'"':'')+'>'+(cc?'<span class="lbl"><span class="tape" style="background:'+CASE[cc].c+'"></span>'+s.t+'</span>':s.t)+(n?'<span class="pill '+(s.id===cur?'':'warn')+'">'+n+'</span>':'')+'</a>';
   });
   var load=new Date(S.show.loadIn),days=Math.ceil((load-new Date())/864e5);
   var countTxt=days>0?days+(days===1?" day":" days"):(days>-4?"Show week":"Wrapped");
