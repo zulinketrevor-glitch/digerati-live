@@ -206,6 +206,17 @@ tr.grouprow.ccg td{background:color-mix(in srgb,var(--cc) 14%,var(--surface-2))}
 .mlist .num{font-family:var(--mono,ui-monospace,monospace);font-weight:600;text-align:right}
 .mlist .pct{color:var(--muted);font-size:12px;min-width:38px;text-align:right}
 @media print{nav.rail,.sechead .tools,.filters,header .tools{display:none!important}}
+.verband{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;border-radius:10px;padding:14px 16px;margin:0 0 14px;border:2px solid}
+.verband b.v{font-family:var(--display);font-size:28px;line-height:1;letter-spacing:.02em}
+.verband .tag{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
+.verband.cur{border-color:#16A34A;background:color-mix(in srgb,#16A34A 10%,var(--surface))}
+.verband.cur .tag{background:#16A34A;color:#fff}
+.verband.old{border-color:#DC2626;border-style:dashed;background:repeating-linear-gradient(135deg,color-mix(in srgb,#DC2626 7%,var(--surface)) 0 12px,var(--surface) 12px 24px)}
+.verband.old .tag{background:#DC2626;color:#fff}
+.oldset .shot{position:relative}
+.oldset .shot .img img{filter:grayscale(1);opacity:.55}
+.oldset .shot::after{content:"SUPERSEDED · v5";position:absolute;top:10px;left:10px;background:#DC2626;color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:4px}
+details.oldwrap>summary{list-style:none;cursor:pointer}details.oldwrap>summary::-webkit-details-marker{display:none}
 </style>
 <div id="app"></div>
 <script type="application/json" id="show-data">{}</script>
@@ -218,7 +229,8 @@ var S=JSON.parse(dataEl.textContent);
 var SRC={};
 var FONTS=["files/fonts/Soleil/Soleil-Bold.otf", "files/fonts/Soleil/Soleil-BoldItalic.otf", "files/fonts/Soleil/Soleil-Italic.otf", "files/fonts/Soleil/Soleil.otf", "files/fonts/Soleil/SoleilBk-Italic.otf", "files/fonts/Soleil/SoleilBk.otf", "files/fonts/Soleil/SoleilBl-Italic.otf", "files/fonts/Soleil/SoleilBl.otf", "files/fonts/Soleil/SoleilLt-Italic.otf", "files/fonts/Soleil/SoleilLt.otf", "files/fonts/Soleil/SoleilMagicCapsYang.otf", "files/fonts/Soleil/SoleilMagicCapsYin.otf", "files/fonts/Soleil/SoleilMagicCapsYinYang.otf", "files/fonts/Soleil/SoleilSb-Italic.otf", "files/fonts/Soleil/SoleilSb.otf", "files/fonts/Soleil/SoleilXb-Italic.otf", "files/fonts/Soleil/SoleilXb.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-Black.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-BlackItalic.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-Bold.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-BoldItalic.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-Light.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-LightItalic.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-Medium.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-MediumItalic.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-Regular.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-RegularItalic.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-Semibold.otf", "files/fonts/Tiempos-Headline/TiemposHeadline-SemiboldItalic.otf"];
 var FILES={
- cad:{name:"Tallen CAD v5 — full set (6 sheets)",path:"files/NP-Chicago-CAD-v5.pdf",size:"9.7 MB"},
+ cad:{name:"CAD v10 — CURRENT · full set (6 sheets, 10/5/26)",path:"files/NP-Chicago-CAD-v10.pdf",size:"5.6 MB"},
+ cad5:{name:"CAD v5 — SUPERSEDED · reference only (8/27/26)",path:"files/NP-Chicago-CAD-v5.pdf",size:"9.7 MB"},
  ledMap:{name:"LED pixel map + Novastar layout",path:"files/LED-Pixel-Map.pdf",size:"1.7 MB"},
  brand:{name:"Nixon Peabody brand guidelines (Feb 2025)",path:"files/NP-Brand-Guidelines-2025.pdf",size:"2.6 MB"},
  campdf:{name:"Camera & record wiring (PDF)",path:"files/NP-Chicago-Camera-Record-Wiring.pdf",size:"0.2 MB"},
@@ -226,7 +238,7 @@ var FILES={
  aupdf:{name:"Audio coverage report (EASE Focus) PDF",path:"files/Audio-Coverage-EASE.pdf",size:"0.3 MB"},
  lxpdf:{name:"Lighting power & circuit plan (PDF)",path:"files/NP-Chicago-Lighting-Power-Plan.pdf",size:"0.2 MB"},
  fonts:{name:"Brand fonts — Tiempos Headline (12) + Soleil (17), OTF",zip:"NP-Brand-Fonts-Tiempos-Soleil.zip",bundle:FONTS,size:"≈ 4 MB zip"},
- allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf","files/NP-Chicago-Camera-Record-Wiring.pdf","files/Video-Village-Signal-Flow.pdf","files/Audio-Coverage-EASE.pdf","files/truck-route.jpg"],size:"≈ 23 MB zip"},
+ allDraw:{name:"Everything visual — CAD, LED PDFs, renderings",zip:"NP-Chicago-Drawings-and-Renders.zip",bundle:["files/NP-Chicago-CAD-v10.pdf","files/NP-Chicago-CAD-v5.pdf",  "files/LED-Pixel-Map.pdf", "files/render-stage-elevation.jpg", "files/render-house-view.jpg", "files/render-stage-pov.jpg","files/boh-layout.jpg","files/NP-Chicago-Lighting-Power-Plan.pdf","files/NP-Chicago-Camera-Record-Wiring.pdf","files/Video-Village-Signal-Flow.pdf","files/Audio-Coverage-EASE.pdf","files/truck-route.jpg"],size:"≈ 23 MB zip"},
  allBrand:{name:"Brand package — guidelines + fonts",zip:"NP-Chicago-Brand-Package.zip",bundle:["files/NP-Brand-Guidelines-2025.pdf"].concat(FONTS),size:"≈ 7 MB zip"}
 };
 var RENDERS=[
@@ -235,7 +247,7 @@ var RENDERS=[
  {src:"files/render-stage-pov.jpg",t:"Presenter's view — prompters + DSMs"}
 ];
 var CAD=[
- {n:1,t:"Floor plan — seating (719)"},{n:2,t:"Elevation + section"},{n:3,t:"Production plan"},
+ {n:1,t:"Floor plan — seating (690)"},{n:2,t:"Elevation + section"},{n:3,t:"Production plan"},
  {n:4,t:"Rigging + motor loads"},{n:5,t:"LED surface map"},{n:6,t:"Teleprompter + stage views"}
 ];
 var BOH=[{src:"files/boh-layout.jpg",t:"Back of house layout — tech tables, racks and A2",wide:true}];
@@ -397,16 +409,20 @@ function mapSvg(){
   '<g transform="translate(560 30)"><path d="M0 -14 L6 4 L0 0 L-6 4Z" fill="var(--ink)"/><text y="18" font-size="10" text-anchor="middle" fill="var(--muted)">N</text></g></svg></div>';
 }
 R.renders=function(){
-  var h=head("renders","Renderings","From Tallen's CAD v5. Tap any image for full screen; use Actual size to zoom to full resolution.",fileBtn("allDraw","Download all drawings"));
+  var h=head("renders","Renderings","From Tallen's CAD v5 renderings; the current drawing set is v10 on the CAD page. Tap any image for full screen; use Actual size to zoom to full resolution.",fileBtn("allDraw","Download all drawings"));
   h+='<button class="hero-shot" data-lb="renders" data-i="0"><img src="'+RENDERS[0].src+'" alt="'+esc(RENDERS[0].t)+'"></button>';
   h+='<h3>All renderings</h3>'+shots(RENDERS,"renders");
   h+='<h3>LED content previews</h3>'+shots(LEDIMG,"ledimg");
   return h;
 };
 R.cad=function(){
-  var h=head("cad","CAD","Tallen drawing set v5 for SO# 551963, drawn 8/27/26 by Matt Waldner. Each sheet opens full screen.",fileBtn("cad","Download full CAD PDF"));
-  h+=shots(cadList(),"cad");
-  h+='<h3>Files</h3><div class="files">'+docRow("cad")+'</div>';
+  var V=S.cadv||{current:{v:"v10",date:"10/5/26"},old:{v:"v5",date:"8/27/26"},changes:[]};
+  var h=head("cad","CAD","Tallen drawing set for SO# 551963 by Matt Waldner. Build from v10. v5 is kept below for reference only. Each sheet opens full screen.",fileBtn("cad","Download CAD v10 PDF"));
+  h+='<div class="verband cur"><span class="tag">Current</span><b class="v">CAD '+esc(V.current.v)+'</b><span>Drawn '+esc(V.current.date)+' · <b>build from this set</b></span></div>';
+  h+=shots(cadList(10),"cad");
+  h+='<div class="files" style="margin-top:12px">'+docRow("cad")+'</div>';
+  if(V.changes&&V.changes.length)h+='<h3>What changed · v5 → v10</h3><div class="tw"><table><thead><tr><th>Area</th><th>Change</th></tr></thead><tbody>'+V.changes.map(function(c){return '<tr><td style="font-weight:600;white-space:nowrap">'+esc(c[0])+'</td><td>'+esc(c[1])+'</td></tr>'}).join("")+'</tbody></table></div>';
+  h+='<h3>Superseded set</h3><details class="oldwrap"><summary><div class="verband old"><span class="tag">Superseded</span><b class="v" style="text-decoration:line-through;text-decoration-thickness:3px">CAD '+esc(V.old.v)+'</b><span>Drawn '+esc(V.old.date)+' · <b>reference only, do not build from it</b> · tap to show</span></div></summary><div class="oldset">'+shots(cadList(5),"cad5")+'</div><div class="files" style="margin-top:12px">'+docRow("cad5")+'</div></details>';
   return h;
 };
 R.led=function(){
@@ -460,8 +476,9 @@ R.lighting=function(){
   return h;
 };
 R.staging=function(){
-  var h=head("staging","Staging & Rigging","Stage, drape and rigging from the CAD. "+(CREW?"Motor loads are from Tallen's v5 calc.":"Motor loads are Tallen's v5 calc on the original fixture list.")+"");
-  h+='<h3>Motor loads · DS truss (CAD sheet 4)</h3><div class="tw"><table><thead><tr><th>Point</th><th style="text-align:right">Load (lbf)</th></tr></thead><tbody>'+S.motors.map(function(m){return '<tr><td class="mono">'+m[0]+'</td><td class="q" style="width:auto">'+m[1]+'</td></tr>'}).join("")+'</tbody></table></div>';
+  var h=head("staging","Staging & Rigging","Stage, drape and rigging from the CAD. "+(CREW?"Motor loads are from Tallen's CAD v10 calc.":"Motor loads are Tallen's CAD v10 calc (v5 shown struck through for comparison).")+"");
+  var M5={};(S.motors_v5||[]).forEach(function(m){M5[m[0]]=m[1]});
+  h+='<h3>Motor loads · DS truss (CAD v10, sheet 4)</h3><div class="tw"><table><thead><tr><th>Point</th><th style="text-align:right">v10 load (lbf)</th>'+(S.motors_v5?'<th style="text-align:right">v5 · superseded</th><th style="text-align:right">Change</th>':'')+'</tr></thead><tbody>'+S.motors.map(function(m){var o=M5[m[0]],dlt=o?(+m[1]-+o):null;return '<tr><td class="mono">'+m[0]+'</td><td class="q" style="width:auto"><b>'+m[1]+'</b></td>'+(S.motors_v5?'<td class="q muted" style="width:auto;text-decoration:line-through">'+(o||'')+'</td><td class="q" style="width:auto;color:'+(dlt>100?'var(--crit)':'var(--muted)')+'">'+(dlt==null?'':(dlt>0?'+':'')+dlt.toFixed(0))+'</td>':'')+'</tr>'}).join("")+'</tbody></table></div><p class="muted small" style="margin-top:6px">Total '+S.motors.reduce(function(s,m){return s+ +m[1]},0).toFixed(0)+' lbf on v10. Highest point M3 at 743 lbf; every point is under a ½-ton (1,000 lb) motor.</p>';
   h+='<h3>Gear</h3>'+gearTable("staging")+openBlock(DEPT_FOR.staging);
   return h;
 };
@@ -614,7 +631,7 @@ R.brand=function(){
   var cols=[["Azure","#28519D"],["Verde","#188369"],["Cerise","#D33867"],["Plum","#5F2C8F"],["Light Azure","#D5F1FE"],["Light Verde","#D1F4EC"],["Light Cerise","#FAD8E3"],["Light Plum","#E7D8F7"],["Black","#1A1B2E"],["Gray","#596267"],["Dove","#E2E4E4"],["Frost","#F6F6F6"]];
   h+='<h3>Digital palette · tap to copy</h3><div class="sw">'+cols.map(function(c){return '<button class="c" data-hex="'+c[1]+'"><i style="background:'+c[1]+'"></i><span><b>'+c[0]+'</b><br><span class="mono">'+c[1]+'</span></span></button>'}).join("")+'</div>';
   h+='<div class="note" style="margin-top:12px">Logo: light Spark with the logotype in the darker color. Don\'t recolor, rotate, add effects or place on busy backgrounds. Brand photography uses NP people only — no stock faces.</div>';
-  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","vvpdf","campdf","aupdf","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
+  h+='<h3>All files</h3><div class="files">'+["allDraw","allBrand","cad","cad5","vvpdf","campdf","aupdf","lxpdf","ledMap","brand","fonts"].map(docRow).join("")+'</div>';
   h+='<p class="muted small" style="margin-top:10px">Fonts are Nixon Peabody\'s licensed copies, shared for this show\'s content only.</p>';
   return h;
 };
@@ -647,8 +664,8 @@ var BLANK={crew:{role:"",dept:"Video",name:"",co:"",phone:"",email:"",inote:"",a
 
 /* lightbox */
 var LB=null;
-function cadList(){return CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"Sheet "+c.n+" · "+c.t}}).concat([{src:"files/boh-layout.jpg",t:"Tech layout · back of house"}])}
-function groupList(g){if(g==="vv")return [{src:"files/video-village-flow.jpg",t:"Video village signal flow · E2 inputs, outputs and LED processors"}];if(g==="au")return [{src:"files/audio-coverage.png",t:"Audio coverage · plan and side view"}];if(g==="truck")return [{src:"files/truck-route.jpg",t:"Truck route to the Hyatt loading dock"}];if(g==="cam")return [{src:"files/cam-flow.svg",t:"Camera & record signal flow"}];if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
+function cadList(v){if(v===5)return CAD.map(function(c){return {src:"files/cad-page-"+c.n+".jpg",thumb:"files/cad-thumb-"+c.n+".jpg",t:"SUPERSEDED v5 · Sheet "+c.n+" · "+(c.n===1?"Floor plan — seating (719)":c.t),old:true}});return CAD.map(function(c){return {src:"files/cad10-page-"+c.n+".jpg",thumb:"files/cad10-thumb-"+c.n+".jpg",t:"v10 · Sheet "+c.n+" · "+c.t}}).concat([{src:"files/boh-layout.jpg",t:"Tech layout · back of house"}])}
+function groupList(g){if(g==="cad5")return cadList(5);if(g==="vv")return [{src:"files/video-village-flow.jpg",t:"Video village signal flow · E2 inputs, outputs and LED processors"}];if(g==="au")return [{src:"files/audio-coverage.png",t:"Audio coverage · plan and side view"}];if(g==="truck")return [{src:"files/truck-route.jpg",t:"Truck route to the Hyatt loading dock"}];if(g==="cam")return [{src:"files/cam-flow.svg",t:"Camera & record signal flow"}];if(g==="lx")return [{src:"files/lx-truss-plot.svg",t:"DS truss plot · units, DMX, circuits"},{src:"files/lx-floor-wall.svg",t:"LED wall X4s + floor COLORados"}];return g==="renders"?RENDERS:g==="ledimg"?LEDIMG:g==="boh"?BOH:cadList()}
 function openLB(g,i){
   var list=groupList(g);LB={g:g,i:i,list:list,actual:false};
   var el=document.createElement("div");el.className="lb";el.id="lb";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
